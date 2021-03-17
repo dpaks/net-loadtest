@@ -21,14 +21,18 @@ type httpClient struct {
 	qparams map[string]string
 }
 
+var transport = &http.Transport{
+	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	DialContext: (&net.Dialer{
+		Timeout:   timeout * time.Second,
+		KeepAlive: 5 * time.Second,
+	}).DialContext,
+	MaxIdleConns:        100,
+	MaxIdleConnsPerHost: 100,
+	IdleConnTimeout:     10 * time.Second,
+}
+
 func HTTPClient() httpClient {
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		DialContext: (&net.Dialer{
-			Timeout:   timeout * time.Second,
-			KeepAlive: timeout * time.Second,
-		}).DialContext,
-	}
 	cl := httpClient{
 		Client:  http.Client{Transport: transport, Timeout: time.Second * timeout},
 		header:  make(map[string]string),
